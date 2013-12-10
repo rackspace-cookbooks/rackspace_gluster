@@ -18,6 +18,7 @@ volume = ""
 replica_cnt = 0
 node_cnt = 0
 peer_cnt = 0
+auth_clients = ""
 is_last_node = false
 
 node[:glusters].each do |g|
@@ -28,6 +29,7 @@ node[:glusters].each do |g|
       mount_point = g[:mount_point]
       volume = g[:volume]
       replica_cnt = g[:replica_cnt]
+      auth_clients = g[:auth_clients]
       node_cnt = g[:nodes].count
       peer_cnt = node_cnt - 1
       is_last_node = g[:nodes].index(node[:rackspace][:private_ip]) ==  node_cnt - 1
@@ -90,6 +92,14 @@ unless cluster.empty?
       only_if "echo \"#{peer_cnt} == `gluster peer status | egrep \"^Number of Peers: \" | awk '{print $4}'`\" | bc -l" 
     end
 
+    # !!! CHANGES TO AUTHENTICATION REQUIRES MANUAL STOP/START OF VOLUME FOR NOW !!!
+    execute "gluster volume set #{volume} auth.allow #{auth_clients}" do
+      command "gluster volume set #{volume} auth.allow #{auth_clients}"
+      retries 1
+      retry_delay 5
+      not_if "gluster volume info #{volume} | egrep \"^auth.allow: #{auth_clients}\""
+    end
+
     # start the volume
     execute "gluster volume start #{volume}" do
       command "gluster volume start #{volume}"
@@ -98,10 +108,4 @@ unless cluster.empty?
       not_if "gluster volume info #{volume}| egrep '^Status: Started'"
     end
   end
-
-  # !!! AUTHENTICATION !!!
-  # reject connections to cluster
-  # gluster volume set vol-c1v0 auth.reject *
-  # allow connections from client ip
-  # gluster volume set vol-c1v0 auth.allow 10.208.98.68
 end
