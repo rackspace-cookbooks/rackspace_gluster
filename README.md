@@ -26,6 +26,7 @@ Sample environment:
         "mount_point": "/data/gv0/brick1",
         "volume": "vol0",
         "replica_cnt": 2,
+        "auth_clients": "10.176.129.211,10.176.130.99",
         "nodes": [
           "10.176.163.120",
           "10.176.164.69",
@@ -39,6 +40,7 @@ Sample environment:
         "mount_point": "/data/gv0/brick1",
         "volume": "vol1",
         "replica_cnt": 2,
+        "auth_clients": "*",
         "nodes": [
           "10.0.0.1",
           "10.0.0.2",
