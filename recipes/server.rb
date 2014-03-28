@@ -7,18 +7,27 @@
 # All rights reserved - Do Not Redistribute
 #
 
-package 'xfsprogs'
-package 'glusterfs-server'
-package 'vnstat'
+admin_packages = %W[
+  xfsprogs
+  glusterfs-server
+  vnstat
+  bc
+]
 
-cluster = ""
-block_device = ""
-mount_point = ""
-volume = ""
+admin_packages.each do | admin_package |
+  package admin_package do
+    action :install
+  end
+end
+
+cluster = ''
+block_device = ''
+mount_point = ''
+volume = ''
 replica_cnt = 0
 node_cnt = 0
 peer_cnt = 0
-auth_clients = ""
+auth_clients = ''
 is_last_node = false
 
 node[:glusters].each do |g|
@@ -39,22 +48,22 @@ node[:glusters].each do |g|
 end
 
 unless cluster.empty?
-  execute "mkfs.xfs" do
+  execute 'mkfs.xfs' do
     command "mkfs.xfs -i size=512 #{block_device}"
     not_if { system("blkid -s TYPE -o value #{block_device}") }
   end
-  
+
   directory "#{mount_point}" do
-     owner 'root'
-     group 'root'
-     mode 0755
-     recursive true
+    owner 'root'
+    group 'root'
+    mode 0755
+    recursive true
   end
-  
+
   mount "#{mount_point}" do
     device "#{block_device}"
-    fstype "xfs"
-    options "rw"
+    fstype 'xfs'
+    options 'rw'
     action [:mount, :enable]
   end
 
@@ -89,7 +98,7 @@ unless cluster.empty?
       retries 1
       retry_delay 5
       not_if "gluster volume info | egrep '^Volume Name: #{volume}$'"
-      only_if "echo \"#{peer_cnt} == `gluster peer status | egrep \"^Number of Peers: \" | awk '{print $4}'`\" | bc -l" 
+      only_if "echo \"#{peer_cnt} == `gluster peer status | egrep \"^Number of Peers: \" | awk '{print $4}'`\" | bc -l"
     end
 
     # !!! CHANGES TO AUTHENTICATION REQUIRES MANUAL STOP/START OF VOLUME FOR NOW !!!
