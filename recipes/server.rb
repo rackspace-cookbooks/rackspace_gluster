@@ -7,12 +7,12 @@
 # All rights reserved - Do Not Redistribute
 #
 
-admin_packages = %W[
+admin_packages = %W(
   xfsprogs
   glusterfs-server
   vnstat
   bc
-]
+)
 
 admin_packages.each do | admin_package |
   package admin_package do
@@ -50,18 +50,22 @@ end
 unless cluster.empty?
   execute 'mkfs.xfs' do
     command "mkfs.xfs -i size=512 #{block_device}"
-    not_if { system("blkid -s TYPE -o value #{block_device}") }
+    not_if do
+      cmd = Mixlib::ShellOut.new("blkid -s TYPE -o value #{block_device}")
+      cmd.run_command
+      cmd.error!
+    end
   end
 
-  directory "#{mount_point}" do
+  directory mount_point do
     owner 'root'
     group 'root'
     mode 0755
     recursive true
   end
 
-  mount "#{mount_point}" do
-    device "#{block_device}"
+  mount mount_point do
+    device block_device
     fstype 'xfs'
     options 'rw'
     action [:mount, :enable]
