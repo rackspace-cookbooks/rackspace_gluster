@@ -54,14 +54,12 @@ Sample environment:
 Testing
 =======
 
-Pleas see testing guidelines at [contributing](https://github.com/rackspace-cook
-books/contributing/blob/master/CONTRIBUTING.md)
+Please see testing guidelines at [contributing](https://github.com/rackspace-cookbooks/contributing/blob/master/CONTRIBUTING.md)
 
 Contributing
 ============
 
-Please see contributing guidelines at [contributing](https://github.com/rackspac
-e-cookbooks/contributing/blob/master/CONTRIBUTING.md)
+Please see contributing guidelines at [contributing](https://github.com/rackspace-cookbooks/contributing/blob/master/CONTRIBUTING.md)
 
 License and Authors
 -------------------
