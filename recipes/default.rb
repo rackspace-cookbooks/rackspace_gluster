@@ -49,11 +49,7 @@ baseconfig['glusters'].each_with_index do |(gluster_name, gluster), gluster_inde
       # mkfs on block device (only once)
       execute 'mkfs.xfs' do
         command "mkfs.xfs -i size=512 #{block_device}"
-        not_if do
-          cmd = Mixlib::ShellOut.new("blkid -s TYPE -o value #{block_device}")
-          cmd.run_command
-          cmd.error!
-        end
+        not_if "blkid -s TYPE -o value #{block_device}"
       end
 
       # create and fixup the mount point
@@ -103,12 +99,17 @@ baseconfig['glusters'].each_with_index do |(gluster_name, gluster), gluster_inde
     end # each node
 
     volume = gluster['volume']
-    replica_cnt = gluster['replica']
     auth_clients = gluster['auth_clients']
 
+    # if no replica key, don't call it a replica
+    if gluster.has_key?("replica")
+      replica_cnt = gluster['replica']
+      replica_cmd = "replica #{replica_cnt}"
+    end
+
     # create the volume if it doesn't exist
-    execute "gluster volume create #{volume} replica #{replica_cnt} #{volume_nodes.join(" ")}" do
-      command "gluster volume create #{volume} replica #{replica_cnt} #{volume_nodes.join(" ")}"
+    execute "gluster volume create #{volume} #{replica_cmd} #{volume_nodes.join(" ")}" do
+      command "gluster volume create #{volume} #{replica_cmd} #{volume_nodes.join(" ")}"
       retries 1
       retry_delay 5
       not_if "gluster volume info | egrep '^Volume Name: #{volume}$'"

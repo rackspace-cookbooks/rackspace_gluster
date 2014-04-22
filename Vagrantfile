@@ -3,7 +3,7 @@
 
 boxes = [
 { :name => :gluster01 },
-#{ :name => :gluster02, :ssh_port => 2202, :http_fwd => 9982 },
+{ :name => :gluster02 },
 ]
 
 Vagrant.configure("2") do |config|
@@ -56,8 +56,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision :chef_solo do |chef|
     chef.run_list = [
-        "recipe[rackspace_gluster_test::test]", # set a bunch of custom attributes
-#        "recipe[rackspace_gluster::default]",
+        "recipe[rackspace_gluster_test::test]", # test wrapper cookbook
     ]
   end
 end
