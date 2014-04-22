@@ -20,4 +20,4 @@
 
 # This file is to be used for unit testing and vagrant testing.
 
-include_recipe "rackspace_gluster"
+include_recipe 'rackspace_gluster'

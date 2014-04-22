@@ -27,7 +27,7 @@ baseconfig = node['rackspace_gluster']['config']['server']
 # foreach gluster cluster
 baseconfig['glusters'].each_with_index do |(gluster_name, gluster), gluster_index|
 
-  log "configuring gluster cluster " + gluster_name
+  log 'configuring gluster cluster ' + gluster_name
 
   # how many nodes are we
   node_cnt = gluster['nodes'].count
@@ -35,16 +35,16 @@ baseconfig['glusters'].each_with_index do |(gluster_name, gluster), gluster_inde
   is_last_node = false
 
   gluster['nodes'].each_with_index do |(gluster_node_name, gluster_node), node_index|
-    
-    log "examining node " + gluster_node_name
+
+    log 'examining node ' + gluster_node_name
 
     # if it's *this* node (by name, must match!)
-    if gluster_node_name == node['name']
+    if gluster_node_name == node.name
 
       # do any brick setup (idempotent)
       block_device = gluster_node['block_device']
       mount_point = gluster_node['mount_point']
-      log "Working on brick setup for block device " + block_device + " mounting to " + mount_point
+      log 'Working on brick setup for block device ' + block_device + ' mounting to ' + mount_point
 
       # mkfs on block device (only once)
       execute 'mkfs.xfs' do
@@ -73,8 +73,9 @@ baseconfig['glusters'].each_with_index do |(gluster_name, gluster), gluster_inde
       end
 
       # true IFF this node's index is the last in the array
-      if index == node_cnt - 1
+      if node_index == node_cnt - 1
         is_last_node = true
+      end
     end # if this node
   end # end nodes
 
@@ -92,12 +93,11 @@ baseconfig['glusters'].each_with_index do |(gluster_name, gluster), gluster_inde
     # peer up the nodes
     gluster['nodes'].each_with_index do |(gluster_node_name, gluster_node), node_index|
       node_ip = gluster_node['ip']
-      mount_point = gluster_node['mount_point']
       execute "gluster peer probe #{node_ip}" do
         command "gluster peer probe #{node_ip}"
         retries 1
         retry_delay 1
-        not_if { gluster_node_name == node['name'] }
+        not_if { gluster_node_name == node.name }
         not_if "gluster peer status | egrep '^Hostname: #{node_ip}'"
       end # execute
     end # each node
