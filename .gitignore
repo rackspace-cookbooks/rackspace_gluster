@@ -20,5 +20,3 @@ bin/
 tmp/
 vendor/
 .coverage/
-
-vagrant-rackspace.rc.*

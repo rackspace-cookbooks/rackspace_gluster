@@ -1,4 +1,4 @@
-name              'gluster_test'
+name              'rackspace_gluster_test'
 maintainer        'Rackspace, US, Inc.'
 maintainer_email  'martin.smith@rackspace.com'
 license           'Apache 2.0'

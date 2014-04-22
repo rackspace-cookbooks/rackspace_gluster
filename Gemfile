@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'berkshelf', '~> 2.0'
+gem 'berkshelf', '~> 3.0'
 
 group :testing do
   gem 'chefspec', '~> 3.2'
