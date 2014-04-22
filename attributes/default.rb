@@ -1,2 +1,6 @@
-default[:gluster][:server][:mount_point] = '/data/gv0/brick1'
-default[:gluster][:server][:block_device] = '/dev/xvde1'
+default['rackspace_gluster']['config'] = {}
+default['rackspace_gluster']['config']['server'] = {}
+default['rackspace_gluster']['config']['client'] = {}
+
+# default to zero nodes / empty hash
+default['rackspace_gluster']['config']['server']['glusters'] = {}

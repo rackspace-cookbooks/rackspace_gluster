@@ -80,17 +80,13 @@ Vagrant.configure("2") do |config|
               :mount_point => '/data/gv0/brick1',
               :block_device => '/dev/xvde1'
             }
-          },
-          :client => {
           }
         }
       }
     }
 
     chef.run_list = [
-        # default recipe is empty in this cookbook
-        "recipe[rackspace_gluster::client]",
-        "recipe[rackspace_gluster::server]",
+        "recipe[rackspace_gluster::default]",
     ]
   end
 end
