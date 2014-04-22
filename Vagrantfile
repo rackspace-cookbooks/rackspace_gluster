@@ -56,7 +56,7 @@ Vagrant.configure("2") do |config|
   #config.ssh.timeout   = 120
 
   # The path to the Berksfile to use with Vagrant Berkshelf
-  # config.berkshelf.berksfile_path = "./Berksfile"
+  config.berkshelf.berksfile_path = "./Berksfile"
 
   # Enabling the Berkshelf plugin. To enable this globally, add this configuration
   # option to your ~/.vagrant.d/Vagrantfile file
@@ -72,10 +72,25 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision :chef_solo do |chef|
     chef.json = {
+      :rackspace_gluster => {
+        :config => {
+          :server => {
+            :glusters => {
+              # one dummy cluster with a single node
+              :mount_point => '/data/gv0/brick1',
+              :block_device => '/dev/xvde1'
+            }
+          },
+          :client => {
+          }
+        }
+      }
     }
 
     chef.run_list = [
-        "recipe[rackspace_gluster::default]"
+        # default recipe is empty in this cookbook
+        "recipe[rackspace_gluster::client]",
+        "recipe[rackspace_gluster::server]",
     ]
   end
 end
