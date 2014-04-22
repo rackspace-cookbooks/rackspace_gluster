@@ -14,6 +14,11 @@ Requirements
 Usage
 -----
 #### rackspace_gluster::server
+
+We assume that there is only one brick per chef node in this cookbook. Eventually 
+this could be refactored into separate config arrays for bricks and volumes, which 
+would allow for arbitrary numbers of bricks per node.
+
 Add service net IPs to Chef environment.
 NOTE: The order is very important to Gluster when it comes to creating the volume.
 

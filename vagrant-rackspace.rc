@@ -1,0 +1,8 @@
+export OS_USERNAME=USERNAME
+export OS_PASSWORD=APIKEY
+#export RS_KEYPATH="/path/to/generated/id_rsa.pem"
+#export RS_KEYNAME=NAME
+#export RS_RACKCONNECT=false
+#export RS_REGION=ORD
+#export RS_FLAVOR="performance1-1"
+#export RS_IMAGE="/Ubuntu 12.04/"

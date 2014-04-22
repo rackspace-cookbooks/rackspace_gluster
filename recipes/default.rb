@@ -1,12 +1,12 @@
 #
-# Cookbook Name:: rackspace_gluster
-# Recipe:: default
+# cookbook name:: rackspace_gluster
+# recipe:: default
 #
-# Copyright 2014, Rackspace
+# copyright 2014, rackspace
 #
 #
 
-admin_packages = %W(
+admin_packages = %w(
   xfsprogs
   glusterfs-server
   glusterfs-client
@@ -14,91 +14,97 @@ admin_packages = %W(
   bc
 )
 
+include_recipe 'rackspace_apt'
 admin_packages.each do | admin_package |
   package admin_package do
     action :install
   end
 end
 
-cluster = ''
-block_device = ''
-mount_point = ''
-volume = ''
-replica_cnt = 0
-node_cnt = 0
-peer_cnt = 0
-auth_clients = ''
-is_last_node = false
-baseconfig = default['rackspace_gluster']['config']
+# handy-dandy shorthand variable
+baseconfig = node['rackspace_gluster']['config']['server']
 
-baseconfig['server']['glusters'].each do |g|
-  node_cnt = g['nodes'].count
+# foreach gluster cluster
+baseconfig['glusters'].each_with_index do |(gluster_name, gluster), gluster_index|
 
-  g['nodes'].each_with_index do |n, index|
-    if n == node[:rackspace][:private_ip] # or: node[:ipaddress], node[:private_ips][]
-      cluster = g[:name]
-      block_device = g[:block_device]
-      mount_point = g[:mount_point]
-      volume = g[:volume]
-      replica_cnt = g[:replica_cnt]
-      auth_clients = g[:auth_clients]
-      peer_cnt = node_cnt - 1
+  log "configuring gluster cluster " + gluster_name
 
-      # if this node's index is the last in the array
-      is_last_node = ( index ==  node_cnt - 1 )
-      break
-    end
-  end
-end
+  # how many nodes are we
+  node_cnt = gluster['nodes'].count
+  peer_cnt = node_cnt - 1
+  is_last_node = false
 
-unless cluster.empty?
-  execute 'mkfs.xfs' do
-    command "mkfs.xfs -i size=512 #{block_device}"
-    not_if do
-      cmd = Mixlib::ShellOut.new("blkid -s TYPE -o value #{block_device}")
-      cmd.run_command
-      cmd.error!
-    end
-  end
+  gluster['nodes'].each_with_index do |(gluster_node_name, gluster_node), node_index|
+    
+    log "examining node " + gluster_node_name
 
-  directory mount_point do
-    owner 'root'
-    group 'root'
-    mode 0755
-    recursive true
-  end
+    # if it's *this* node (by name, must match!)
+    if gluster_node_name == node['name']
 
-  mount mount_point do
-    device block_device
-    fstype 'xfs'
-    options 'rw'
-    action [:mount, :enable]
-  end
+      # do any brick setup (idempotent)
+      block_device = gluster_node['block_device']
+      mount_point = gluster_node['mount_point']
+      log "Working on brick setup for block device " + block_device + " mounting to " + mount_point
 
-  volume_nodes = []
-  node[:glusters].each do |g|
-    if cluster == g[:name]
-      g[:nodes].each do |n|
-        volume_nodes.push("#{n}:#{mount_point}")
-      end
-    end
-  end
-
-  if is_last_node
-    # peer up the nodes
-    node[:glusters].each do |g|
-      if cluster == g[:name]
-        g[:nodes].each do |n|
-          execute "gluster peer probe #{n}" do
-            command "gluster peer probe #{n}"
-            retries 1
-            retry_delay 1
-            not_if { n == node[:rackspace][:private_ip] }
-            not_if "gluster peer status | egrep '^Hostname: #{n}'"
-          end
+      # mkfs on block device (only once)
+      execute 'mkfs.xfs' do
+        command "mkfs.xfs -i size=512 #{block_device}"
+        not_if do
+          cmd = Mixlib::ShellOut.new("blkid -s TYPE -o value #{block_device}")
+          cmd.run_command
+          cmd.error!
         end
       end
-    end
+
+      # create and fixup the mount point
+      directory mount_point do
+        owner 'root'
+        group 'root'
+        mode 0755
+        recursive true
+      end
+
+      # mount the mountpoint
+      mount mount_point do
+        device block_device
+        fstype 'xfs'
+        options 'rw'
+        action [:mount, :enable]
+      end
+
+      # true IFF this node's index is the last in the array
+      if index == node_cnt - 1
+        is_last_node = true
+    end # if this node
+  end # end nodes
+
+  # if this node was the one we just touched, *and* it's the last in the gluster
+  if is_last_node
+
+    # build a list of volumes
+    volume_nodes = []
+    gluster['nodes'].each_with_index do |(gluster_node_name, gluster_node), node_index|
+      node_ip = gluster_node['ip']
+      mount_point = gluster_node['mount_point']
+      volume_nodes.push("#{node_ip}:#{mount_point}")
+    end # each node
+
+    # peer up the nodes
+    gluster['nodes'].each_with_index do |(gluster_node_name, gluster_node), node_index|
+      node_ip = gluster_node['ip']
+      mount_point = gluster_node['mount_point']
+      execute "gluster peer probe #{node_ip}" do
+        command "gluster peer probe #{node_ip}"
+        retries 1
+        retry_delay 1
+        not_if { gluster_node_name == node['name'] }
+        not_if "gluster peer status | egrep '^Hostname: #{node_ip}'"
+      end # execute
+    end # each node
+
+    volume = gluster['volume']
+    replica_cnt = gluster['replica']
+    auth_clients = gluster['auth_clients']
 
     # create the volume if it doesn't exist
     execute "gluster volume create #{volume} replica #{replica_cnt} #{volume_nodes.join(" ")}" do
@@ -109,7 +115,7 @@ unless cluster.empty?
       only_if "echo \"#{peer_cnt} == `gluster peer status | egrep \"^Number of Peers: \" | awk '{print $4}'`\" | bc -l"
     end
 
-    # !!! CHANGES TO AUTHENTICATION REQUIRES MANUAL STOP/START OF VOLUME FOR NOW !!!
+     # !!! CHANGES TO AUTHENTICATION REQUIRES MANUAL STOP/START OF VOLUME FOR NOW !!!
     execute "gluster volume set #{volume} auth.allow #{auth_clients}" do
       command "gluster volume set #{volume} auth.allow #{auth_clients}"
       retries 1
@@ -124,5 +130,7 @@ unless cluster.empty?
       retry_delay 5
       not_if "gluster volume info #{volume}| egrep '^Status: Started'"
     end
-  end
-end
+
+  end # if is_last_node
+
+end # end gluster
