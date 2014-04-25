@@ -39,16 +39,16 @@ baseconfig['glusters'].each_with_index do |(gluster_name, gluster), _gluster_ind
     log 'examining node ' + gluster_node_name
 
     # if it's *this* node (by name, must match!)
-    if gluster_node_name == node.name
+    if gluster_node_name == node['hostname']
 
       # do any brick setup (idempotent)
       block_device = gluster_node['block_device']
       mount_point = gluster_node['mount_point']
       brick_dir = gluster_node['brick_dir']
-      log 'Working on brick setup for block device ' + block_device + ' mounting to ' + mount_point
+      log 'Matched this hostname to configuration for block device ' + block_device + ' mounting to ' + mount_point + ' with brick in ' + brick_dir
 
       # mkfs on block device (only once)
-      execute 'mkfs.xfs' do
+      execute "mkfs.xfs -i size=512 #{block_device}" do
         command "mkfs.xfs -i size=512 #{block_device}"
         not_if "blkid -s TYPE -o value #{block_device}"
       end
@@ -57,7 +57,7 @@ baseconfig['glusters'].each_with_index do |(gluster_name, gluster), _gluster_ind
       directory mount_point do
         owner 'root'
         group 'root'
-        mode 0755
+        mode '755'
         recursive true
       end
 
@@ -74,7 +74,7 @@ baseconfig['glusters'].each_with_index do |(gluster_name, gluster), _gluster_ind
       directory brick_dir do
         owner 'root'
         group 'root'
-        mode 0755
+        mode '755'
         recursive true
       end
 
@@ -103,7 +103,7 @@ baseconfig['glusters'].each_with_index do |(gluster_name, gluster), _gluster_ind
         command "gluster peer probe #{node_ip}"
         retries 1
         retry_delay 1
-        not_if { gluster_node_name == node.name }
+        not_if { gluster_node_name == node['hostname'] }
         not_if "gluster peer status | egrep '^Hostname: #{node_ip}'"
       end # execute
     end # each node
