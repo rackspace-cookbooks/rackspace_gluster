@@ -1,8 +1,8 @@
 rackspace_gluster Cookbook
 ========================
-Gluster cookbook. Creates a Distributed-Replicate cluster.
+Gluster cookbook. Creates a Distributed, Replicated cluster. 
 
-![Gluster Distributed-Replicate](img/gluster-dv.png)
+![Documentation from Red Hat](https://access.redhat.com/site/documentation/en-US/Red_Hat_Storage/)
 
 Requirements
 ------------
@@ -15,51 +15,20 @@ Usage
 -----
 #### rackspace_gluster::server
 
-We assume that there is only one brick per chef node in this cookbook. Eventually 
+We longer assume that there is only one brick per chef node in this cookbook. Eventually 
 this could be refactored into separate config arrays for bricks and volumes, which 
-would allow for arbitrary numbers of bricks per node.
+would allow for arbitrary numbers of bricks per node. 
 
-Add service net IPs to Chef environment.
-NOTE: The order is very important to Gluster when it comes to creating the volume.
+Additionally, please note that this does no client configuration yet, but this would be trivial to add.
 
-Sample environment:
-    
-    "glusters": [
-      {
-        "name": "Gluster Cluster 1",
-        "block_device": "/dev/xvde1",
-        "mount_point": "/data/gv0/brick1",
-        "volume": "vol0",
-        "replica_cnt": 2,
-        "auth_clients": "10.176.129.211,10.176.130.99",
-        "nodes": [
-          "10.176.163.120",
-          "10.176.164.69",
-          "10.176.163.237",
-          "10.176.161.105"
-        ]
-      },
-      {
-        "name": "Gluster Cluster 2",
-        "block_device": "/dev/xvde1",
-        "mount_point": "/data/gv0/brick1",
-        "volume": "vol1",
-        "replica_cnt": 2,
-        "auth_clients": "*",
-        "nodes": [
-          "10.0.0.1",
-          "10.0.0.2",
-          "10.0.0.3",
-          "10.0.0.4"
-        ]
-      }
-    ]
+NOTE: The order is very important to Gluster when it comes to creating the volume. This cookbook does peer probes and creates the volume on the last host in the config array.
 
+[Sample environment](test/fixtures/cookbooks/rackspace_gluster_test/attributes/default.rb)
 
 Testing
 =======
 
-Please see testing guidelines at [contributing](https://github.com/rackspace-cookbooks/contributing/blob/master/CONTRIBUTING.md)
+Please see testing guidelines at [contributing](https://github.com/rackspace-cookbooks/contributing/blob/master/CONTRIBUTING.md). This cookbook comes with RSpec and ChefSpec tests, as well as a Vagrantfile for a 2 node replicated cluster.
 
 Contributing
 ============
@@ -68,7 +37,9 @@ Please see contributing guidelines at [contributing](https://github.com/rackspac
 
 License and Authors
 -------------------
-Authors: Ted Neykov   <ted.neykov@rackspace.com>
+
+Authors: Ted Neykov   <ted.neykov@rackspace.com> 
+
 Authors: Martin Smith <martin.smith@rackspace.com>
 
 ```text
