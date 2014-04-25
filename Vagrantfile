@@ -22,6 +22,7 @@ Vagrant.configure("2") do |config|
   # Enabling the Berkshelf plugin. To enable this globally, add this configuration
   # option to your ~/.vagrant.d/Vagrantfile file
   config.berkshelf.enabled = true
+  config.berkshelf.berksfile_path = "./Berksfile.vagrant"
 
   config.omnibus.chef_version = :latest
 
