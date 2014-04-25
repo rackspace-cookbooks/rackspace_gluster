@@ -44,6 +44,7 @@ baseconfig['glusters'].each_with_index do |(gluster_name, gluster), gluster_inde
       # do any brick setup (idempotent)
       block_device = gluster_node['block_device']
       mount_point = gluster_node['mount_point']
+      brick_dir = gluster_node['brick_dir']
       log 'Working on brick setup for block device ' + block_device + ' mounting to ' + mount_point
 
       # mkfs on block device (only once)
@@ -68,6 +69,15 @@ baseconfig['glusters'].each_with_index do |(gluster_name, gluster), gluster_inde
         action [:mount, :enable]
       end
 
+      # gluster no longer likes mount points directly as bricks,
+      # get the new attribute for a subdir of the mount point
+      directory brick_dir do
+        owner 'root'
+        group 'root'
+        mode 0755
+        recursive true
+      end
+
       # true IFF this node's index is the last in the array
       if node_index == node_cnt - 1
         is_last_node = true
@@ -82,8 +92,8 @@ baseconfig['glusters'].each_with_index do |(gluster_name, gluster), gluster_inde
     volume_nodes = []
     gluster['nodes'].each_with_index do |(gluster_node_name, gluster_node), node_index|
       node_ip = gluster_node['ip']
-      mount_point = gluster_node['mount_point']
-      volume_nodes.push("#{node_ip}:#{mount_point}")
+      brick_dir = gluster_node['brick_dir']
+      volume_nodes.push("#{node_ip}:#{brick_dir}")
     end # each node
 
     # peer up the nodes
