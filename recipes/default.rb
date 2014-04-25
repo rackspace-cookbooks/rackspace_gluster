@@ -25,7 +25,7 @@ end
 baseconfig = node['rackspace_gluster']['config']['server']
 
 # foreach gluster cluster
-baseconfig['glusters'].each_with_index do |(gluster_name, gluster), gluster_index|
+baseconfig['glusters'].each_with_index do |(gluster_name, gluster), _gluster_index|
 
   log 'configuring gluster cluster ' + gluster_name
 
@@ -90,14 +90,14 @@ baseconfig['glusters'].each_with_index do |(gluster_name, gluster), gluster_inde
 
     # build a list of volumes
     volume_nodes = []
-    gluster['nodes'].each_with_index do |(gluster_node_name, gluster_node), node_index|
+    gluster['nodes'].each_with_index do |(_gluster_node_name, gluster_node), _node_index|
       node_ip = gluster_node['ip']
       brick_dir = gluster_node['brick_dir']
       volume_nodes.push("#{node_ip}:#{brick_dir}")
     end # each node
 
     # peer up the nodes
-    gluster['nodes'].each_with_index do |(gluster_node_name, gluster_node), node_index|
+    gluster['nodes'].each_with_index do |(gluster_node_name, gluster_node), _node_index|
       node_ip = gluster_node['ip']
       execute "gluster peer probe #{node_ip}" do
         command "gluster peer probe #{node_ip}"
@@ -112,14 +112,14 @@ baseconfig['glusters'].each_with_index do |(gluster_name, gluster), gluster_inde
     auth_clients = gluster['auth_clients']
 
     # if no replica key, don't call it a replica
-    if gluster.has_key?("replica")
+    if gluster.key?('replica')
       replica_cnt = gluster['replica']
       replica_cmd = "replica #{replica_cnt}"
     end
 
     # create the volume if it doesn't exist
-    execute "gluster volume create #{volume} #{replica_cmd} #{volume_nodes.join(" ")}" do
-      command "gluster volume create #{volume} #{replica_cmd} #{volume_nodes.join(" ")}"
+    execute "gluster volume create #{volume} #{replica_cmd} #{volume_nodes.join(' ')}" do
+      command "gluster volume create #{volume} #{replica_cmd} #{volume_nodes.join(' ')}"
       retries 1
       retry_delay 5
       not_if "gluster volume info | egrep '^Volume Name: #{volume}$'"
