@@ -14,7 +14,7 @@ admin_packages = %w(
   bc
 )
 
-include_recipe 'rackspace_apt'
+include_recipe 'apt'
 admin_packages.each do | admin_package |
   package admin_package do
     action :install
