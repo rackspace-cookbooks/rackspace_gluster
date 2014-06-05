@@ -8,7 +8,7 @@ describe 'rackspace_gluster::default' do
     ChefSpec::Runner.new(platform: 'ubuntu', version: '14.04') do |node|
 
       # stubs for commands for block devices, bc, and gluster
-      stub_command('test -f /var/lib/apt/periodic/update-success-stamp').and_return(true) # rackspace_apt
+      stub_command('test -f /var/lib/apt/periodic/update-success-stamp').and_return(true) # apt
       stub_command('blkid -s TYPE -o value /dev/sdb').and_return(false) # no filesystem present
       stub_command("gluster peer status | egrep '^Hostname: 33.33.33.10'").and_return(false) # no peers yet
       stub_command("echo \"1 == `gluster peer status | egrep \"^Number of Peers: \" | awk '{print $4}'`\" | bc -l").and_return(0) # 0 peers
