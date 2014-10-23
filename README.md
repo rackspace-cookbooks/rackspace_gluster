@@ -6,7 +6,9 @@ Gluster cookbook. Creates a Distributed, Replicated cluster.
 
 Requirements
 ------------
-...
+
+GlusterFS depends on [epel](https://supermarket.getchef.com/cookbooks/yum-epel) on CentOS 6.5.
+
 #### additional packages installed
 - `xfsprogs`
 - `vnstat`
