@@ -127,11 +127,13 @@ baseconfig['glusters'].each_with_index do |(gluster_name, gluster), _gluster_ind
     end
 
      # !!! CHANGES TO AUTHENTICATION REQUIRES MANUAL STOP/START OF VOLUME FOR NOW !!!
-    execute "gluster volume set #{volume} auth.allow #{auth_clients}" do
-      command "gluster volume set #{volume} auth.allow #{auth_clients}"
-      retries 1
-      retry_delay 5
-      not_if "gluster volume info #{volume} | egrep \"^auth.allow: #{auth_clients}\""
+    auth_clients.each do |client|
+      execute "gluster volume set #{volume} auth.allow #{client}" do
+        command "gluster volume set #{volume} auth.allow #{client}"
+        retries 1
+        retry_delay 5
+        not_if "gluster volume info #{volume} | egrep \"^auth.allow: #{client}\""
+      end
     end
 
     # start the volume
