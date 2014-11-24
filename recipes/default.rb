@@ -117,8 +117,8 @@ baseconfig['glusters'].each_with_index do |(gluster_name, gluster), _gluster_ind
       node_ip = gluster_node['ip']
       execute "gluster peer probe #{node_ip}" do
         command "gluster peer probe #{node_ip}"
-        retries 1
-        retry_delay 1
+        retries 10      # just retry while other nodes get on-line
+        retry_delay 15
         not_if { gluster_node_name == node['hostname'] }
         not_if "gluster peer status | egrep '^Hostname: #{node_ip}'"
       end # execute
