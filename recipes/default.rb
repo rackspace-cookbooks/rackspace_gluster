@@ -6,6 +6,16 @@
 #
 #
 
+# repo dependencies for php-fpm
+if platform_family?('rhel')
+  include_recipe 'yum'
+  include_recipe 'yum-ius'
+  include_recipe 'yum-epel'
+  include_recipe 'rackspace_gluster::yum-glusterfs-epel'
+elsif platform_family?('debian')
+  include_recipe 'apt'
+end
+
 admin_packages = %w(
   xfsprogs
   glusterfs-server
@@ -14,12 +24,18 @@ admin_packages = %w(
   bc
 )
 
-include_recipe 'apt'
 admin_packages.each do | admin_package |
   package admin_package do
     action :install
   end
 end
+
+if platform_family?('rhel')
+  service "glusterd" do
+    action [ :enable, :start ]
+  end
+end
+
 
 # handy-dandy shorthand variable
 baseconfig = node['rackspace_gluster']['config']['server']
@@ -101,8 +117,8 @@ baseconfig['glusters'].each_with_index do |(gluster_name, gluster), _gluster_ind
       node_ip = gluster_node['ip']
       execute "gluster peer probe #{node_ip}" do
         command "gluster peer probe #{node_ip}"
-        retries 1
-        retry_delay 1
+        retries 10      # just retry while other nodes get on-line
+        retry_delay 15
         not_if { gluster_node_name == node['hostname'] }
         not_if "gluster peer status | egrep '^Hostname: #{node_ip}'"
       end # execute
@@ -120,7 +136,7 @@ baseconfig['glusters'].each_with_index do |(gluster_name, gluster), _gluster_ind
     # create the volume if it doesn't exist
     execute "gluster volume create #{volume} #{replica_cmd} #{volume_nodes.join(' ')}" do
       command "gluster volume create #{volume} #{replica_cmd} #{volume_nodes.join(' ')}"
-      retries 1
+      retries 5
       retry_delay 5
       not_if "gluster volume info | egrep '^Volume Name: #{volume}$'"
       only_if "echo \"#{peer_cnt} == `gluster peer status | egrep \"^Number of Peers: \" | awk '{print $4}'`\" | bc -l"
