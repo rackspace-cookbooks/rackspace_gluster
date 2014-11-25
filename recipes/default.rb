@@ -136,7 +136,7 @@ baseconfig['glusters'].each_with_index do |(gluster_name, gluster), _gluster_ind
     # create the volume if it doesn't exist
     execute "gluster volume create #{volume} #{replica_cmd} #{volume_nodes.join(' ')}" do
       command "gluster volume create #{volume} #{replica_cmd} #{volume_nodes.join(' ')}"
-      retries 1
+      retries 5
       retry_delay 5
       not_if "gluster volume info | egrep '^Volume Name: #{volume}$'"
       only_if "echo \"#{peer_cnt} == `gluster peer status | egrep \"^Number of Peers: \" | awk '{print $4}'`\" | bc -l"
