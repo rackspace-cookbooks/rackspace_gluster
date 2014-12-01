@@ -1,8 +1,9 @@
+GLUSTER_EPEL_REPO = 'http://download.gluster.org/pub/gluster/glusterfs/LATEST/EPEL.repo'
 # glusterfs-epel
 default['yum']['glusterfs-epel']['repositoryid'] = 'glusterfs-epel'
 
 default['yum']['glusterfs-epel']['description'] = 'GlusterFS is a clustered file-system capable of scaling to several petabytes.'
-default['yum']['glusterfs-epel']['baseurl'] = "http://download.gluster.org/pub/gluster/glusterfs/LATEST/EPEL.repo/epel-#{node['platform_version'].split('.')[0]}/#{node['kernel']['machine']}/"
+default['yum']['glusterfs-epel']['baseurl'] = "#{GLUSTER_EPEL_REPO}/epel-#{node['platform_version'].split('.')[0]}/#{node['kernel']['machine']}/"
 default['yum']['glusterfs-epel']['gpgkey'] = 'http://download.gluster.org/pub/gluster/glusterfs/LATEST/EPEL.repo/pub.key'
 
 default['yum']['glusterfs-epel']['failovermethod'] = 'priority'
