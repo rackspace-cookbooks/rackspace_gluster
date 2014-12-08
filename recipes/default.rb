@@ -43,7 +43,7 @@ end
 
 service 'glusterd' do
   action [:enable, :start]
-  only_if { platform_family == 'rhel' }
+  only_if { node['platform_family'] == 'rhel' }
 end
 
 # handy-dandy shorthand variable
