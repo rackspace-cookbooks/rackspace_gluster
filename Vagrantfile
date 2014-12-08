@@ -20,7 +20,7 @@ Vagrant.configure("2") do |config|
   # option to your ~/.vagrant.d/Vagrantfile file
   config.berkshelf.enabled = true
   config.berkshelf.berksfile_path = "./Berksfile"
-  config.omnibus.chef_version = :latest
+  config.omnibus.chef_version = '11'  # stick to version '11'
 
   # Name and build three servers
   boxes.each do |opts|
