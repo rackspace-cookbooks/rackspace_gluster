@@ -43,7 +43,9 @@ end
 
 service 'glusterd' do
   action [:enable, :start]
-  only_if { node['platform_family'] == 'rhel' }
+  # IIRC RHEL/CentOS won't typically start a service on package install, but Debian/Ubuntu flavors will
+  # no harm in enabling this for Debian/Ubuntu though
+  #only_if { node['platform_family'] == 'rhel' }
 end
 
 # handy-dandy shorthand variable
