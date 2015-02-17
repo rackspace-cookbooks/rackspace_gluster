@@ -17,6 +17,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+include_recipe 'chef-sugar'
+
 # repo dependencies for php-fpm
 if platform_family?('rhel')
   include_recipe 'yum'
@@ -41,7 +43,13 @@ admin_packages.each do | admin_package |
   end
 end
 
-service 'glusterd' do
+if debian?
+  service_name = 'glusterfs-server'
+else
+  service_name = 'glusterd'
+end
+
+service service_name do
   action [:enable, :start]
   # IIRC RHEL/CentOS won't typically start a service on package install, but Debian/Ubuntu flavors will
   # no harm in enabling this for Debian/Ubuntu though

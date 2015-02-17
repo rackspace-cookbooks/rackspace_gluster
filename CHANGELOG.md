@@ -3,6 +3,11 @@ rackops-gluster CHANGELOG
 
 This file is used to list changes made in each version of the rackops-gluster cookbook.
 
+1.0.0
+-----
+
+- Ubuntu has changed the daemon name to `glusterfs-server`, allow that here as well
+
 0.4.0 (2014-12-08)
 -----
 - [Simone Soldateschi][siso]: Add support for Red-Hat based distros
